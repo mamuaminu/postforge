@@ -19,8 +19,6 @@ PostForge AI is a portfolio project demonstrating a production-grade multi-tenan
 - **n8n workflow automation** wired up end-to-end
 - **Scheduling and publishing** pipeline with retry logic
 
-> ⚠️ **Disclaimer**: This is a portfolio project. Real OAuth requires developer accounts with each platform (Meta, X, LinkedIn). Tokens shown are placeholders.
-
 ---
 
 ## 📁 Project structure
