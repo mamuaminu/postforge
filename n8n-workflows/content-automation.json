@@ -1,0 +1,85 @@
+{
+  "name": "PostForge AI — Content Flow Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "content-generated",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: Content Ready",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "postforge-content-generated"
+    },
+    {
+      "parameters": {
+        "functionCode": "const content = $json;\nconst platforms = content.platforms || [];\n\nconst routing = {\n  facebook:   { queue: 'postforge:queue:facebook',  channel: '📘 Facebook' },
+  x_twitter:  { queue: 'postforge:queue:x_twitter',  channel: '🐦 X / Twitter' },
+n  instagram:  { queue: 'postforge:queue:instagram', channel: '📷 Instagram' },\n  threads:    { queue: 'postforge:queue:threads',   channel: '🧵 Threads' },\n  linkedin:   { queue: 'postforge:queue:linkedin',  channel: '💼 LinkedIn' },\n};\n\nconst results = platforms.map(p => ({\n  platform: p,\n  queue: routing[p]?.queue || `postforge:queue:${p}`,\n  channel: routing[p]?.channel || p,\n  content: content.variations?.find(v => v.platform === p),\n}));\n\nreturn results;"
+      },
+      "id": "content-router",
+      "name": "Route by Platform",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetName": "Sheet1",
+        "options": { "valueInputMode": "USER_ENTERED" }
+      },
+      "id": "log-to-sheets",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [750, 100]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "resource": "item",
+        "options": {}
+      },
+      "id": "push-to-redis",
+      "name": "Push to Redis Queue",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [750, 250]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "channel": "={{ $json.channel }}",
+        "text": "=🎯 New content ready for `{{ $json.platform }}`\n\n`{{ $json.content?.content }}`"
+      },
+      "id": "notify-telegram",
+      "name": "Notify via Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1000, 250]
+    }
+  ],
+  "connections": {
+    "Webhook: Content Ready": {
+      "main": [[{ "node": "Route by Platform", "type": "main", "index": 0 }]]
+    },
+    "Route by Platform": {
+      "main": [[
+        { "node": "Log to Google Sheets", "type": "main", "index": 0 },
+        { "node": "Push to Redis Queue",  "type": "main", "index": 0 }
+      ]]
+    },
+    "Push to Redis Queue": {
+      "main": [[{ "node": "Notify via Telegram", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetup": false, "templateId": "postforge-content-flow" },
+  "tags": ["postforge", "social-media"]
+}

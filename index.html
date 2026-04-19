@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PostForge AI — AI-Powered Social Media Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #08080f;
+      --bg-2: #0f0f1a;
+      --bg-3: #161625;
+      --accent: #6c63ff;
+      --accent-2: #00d4ff;
+      --accent-glow: rgba(108, 99, 255, 0.25);
+      --text: #e8e8f0;
+      --text-2: #8888a8;
+      --text-3: #555570;
+      --border: rgba(255,255,255,0.07);
+      --card: rgba(255,255,255,0.03);
+      --card-hover: rgba(255,255,255,0.06);
+      --gradient: linear-gradient(135deg, #6c63ff 0%, #00d4ff 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0 2rem;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(8,8,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 1.25rem; font-weight: 800; letter-spacing: -0.03em;
+      background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      color: var(--text-2); text-decoration: none; font-size: 0.875rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .btn {
+      padding: 0.5rem 1.25rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem;
+      text-decoration: none; border: none; cursor: pointer; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 0.4rem;
+    }
+    .btn-primary {
+      background: var(--gradient); color: #fff;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 32px var(--accent-glow); }
+    .btn-ghost {
+      background: transparent; color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 8rem 2rem 4rem;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 600px;
+      background: radial-gradient(ellipse, rgba(108,99,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.35rem 0.85rem; border-radius: 100px;
+      background: var(--card); border: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--accent-2); margin-bottom: 2rem;
+      letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600;
+    }
+    .hero-badge span { font-size: 0.7rem; }
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 900; letter-spacing: -0.04em; line-height: 1.05;
+      max-width: 800px; margin-bottom: 1.5rem;
+    }
+    .hero h1 .gradient { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.25rem); color: var(--text-2); max-width: 600px;
+      margin-bottom: 2.5rem; line-height: 1.7;
+    }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .hero-actions .btn { font-size: 1rem; padding: 0.75rem 1.75rem; }
+
+    /* PLATFORMS */
+    .platforms {
+      display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 4rem; opacity: 0.5;
+    }
+    .platforms span {
+      font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--text-3);
+    }
+
+    /* SECTION */
+    .section { padding: 6rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      display: inline-block;
+      padding: 0.25rem 0.75rem; border-radius: 6px;
+      background: var(--card); border: 1px solid var(--border);
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 1rem;
+    }
+    .section h2 {
+      font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.03em;
+      margin-bottom: 1rem; line-height: 1.2;
+    }
+    .section-sub {
+      font-size: 1.1rem; color: var(--text-2); max-width: 600px; margin-bottom: 3rem;
+    }
+
+    /* FEATURES GRID */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem;
+      transition: all 0.25s ease;
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .feature-card:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-3px); }
+    .feature-card:hover::before { opacity: 0.04; }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--accent-glow);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1.25rem;
+    }
+    .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+    .feature-card p { color: var(--text-2); font-size: 0.9rem; line-height: 1.6; }
+    .feature-tag {
+      position: absolute; top: 1rem; right: 1rem;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.2rem 0.5rem; border-radius: 4px;
+      background: var(--accent-glow); color: var(--accent);
+    }
+
+    /* WORKFLOW SECTION */
+    .workflow-section {
+      background: var(--bg-2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .workflow-steps {
+      display: flex; gap: 2rem; overflow-x: auto; padding: 2rem 0;
+      scrollbar-width: none;
+    }
+    .workflow-steps::-webkit-scrollbar { display: none; }
+    .workflow-step {
+      min-width: 260px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem; position: relative;
+    }
+    .workflow-step::after {
+      content: '→'; position: absolute; right: -1.5rem; top: 50%;
+      transform: translateY(-50%); color: var(--text-3); font-size: 1.5rem;
+    }
+    .workflow-step:last-child::after { display: none; }
+    .step-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--accent-glow); color: var(--accent);
+      font-size: 0.8rem; font-weight: 800; margin-bottom: 0.75rem;
+    }
+    .workflow-step h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .workflow-step p { color: var(--text-2); font-size: 0.85rem; }
+
+    /* PRICING */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;
+    }
+    .pricing-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem;
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .pricing-card.featured {
+      border-color: var(--accent);
+      box-shadow: 0 0 40px var(--accent-glow);
+    }
+    .pricing-card.featured .plan-name { color: var(--accent); }
+    .plan-name { font-size: 0.85rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
+    .plan-price { font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; }
+    .plan-price span { font-size: 1rem; font-weight: 500; color: var(--text-2); }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; flex: 1; }
+    .plan-features li { color: var(--text-2); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+    .plan-features li::before { content: '✓'; color: var(--accent); font-weight: 700; }
+    .pricing-card .btn { text-align: center; justify-content: center; }
+
+    /* PLATFORMS PAGE */
+    .platforms-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;
+    }
+    .platform-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem;
+      display: flex; flex-direction: column; gap: 1rem;
+    }
+    .platform-card .platform-icon { font-size: 2rem; }
+    .platform-card h3 { font-size: 1.2rem; font-weight: 700; }
+    .platform-card p { color: var(--text-2); font-size: 0.9rem; flex: 1; }
+    .platform-status {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.8rem; font-weight: 600;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #22c55e; box-shadow: 0 0 8px #22c55e;
+    }
+
+    /* API SECTION */
+    .api-demo {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+    }
+    .api-bar {
+      display: flex; gap: 0.5rem; padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .api-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #28c840; }
+    .api-code {
+      padding: 1.5rem; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; line-height: 1.8; overflow-x: auto;
+      background: var(--bg);
+    }
+    .api-code .kw { color: #c792ea; }
+    .api-code .str { color: #c3e88d; }
+    .api-code .cm { color: var(--text-3); }
+    .api-code .key { color: var(--accent-2); }
+    .api-code .val { color: #f78c6c; }
+
+    /* CTA */
+    .cta-section {
+      text-align: center; padding: 8rem 2rem;
+      position: relative;
+    }
+    .cta-section::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(108,99,255,0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .cta-section h2 {
+      font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; letter-spacing: -0.04em;
+      margin-bottom: 1rem;
+    }
+    .cta-section p { color: var(--text-2); font-size: 1.1rem; margin-bottom: 2rem; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--text-3); font-size: 0.85rem;
+    }
+    footer a { color: var(--text-3); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    /* DEMO HOLDER */
+    .demo-window {
+      background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem; margin: 3rem auto; max-width: 900px;
+      text-align: center;
+    }
+    .demo-placeholder {
+      background: var(--bg-3); border-radius: 12px; padding: 4rem 2rem;
+      color: var(--text-3); font-size: 0.9rem;
+      border: 1px dashed var(--border);
+    }
+
+    /* TICKER */
+    .ticker-wrap {
+      overflow: hidden; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 1rem 0; margin: 4rem 0;
+    }
+    .ticker {
+      display: flex; gap: 3rem; animation: ticker 30s linear infinite;
+      white-space: nowrap;
+    }
+    .ticker span { font-size: 0.85rem; color: var(--text-3); font-weight: 500; }
+    @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .features-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">PostForge AI</div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#platforms">Platforms</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#api">API</a>
+    <a href="https://github.com/mamuaminu/postforge" target="_blank">GitHub</a>
+  </div>
+  <div style="display:flex;gap:0.75rem;">
+    <a href="#" class="btn btn-ghost">Sign in</a>
+    <a href="#" class="btn btn-primary">Start free →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span>●</span> AI Social Media Agent — v2.0
+  </div>
+  <h1>
+    One prompt.<br /><span class="gradient">5 platforms.</span><br />Zero friction.</h1>
+  <p>
+    PostForge AI generates platform-native content, schedules across all major social networks,
+    and learns from engagement — automatically. Built for agencies, founders, and content teams.
+  </p>
+  <div class="hero-actions">
+    <a href="#" class="btn btn-primary">Start free trial — no credit card</a>
+    <a href="#demo" class="btn btn-ghost">Watch demo</a>
+  </div>
+
+  <div class="platforms">
+    <span>X</span>
+    <span>📘 Facebook</span>
+    <span>📷 Instagram</span>
+    <span>🧵 Threads</span>
+    <span>💼 LinkedIn</span>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span>SOCIAL MEDIA AUTOMATION</span><span>•</span>
+    <span>AI CONTENT GENERATION</span><span>•</span>
+    <span>MULTI-PLATFORM POSTING</span><span>•</span>
+    <span>SCHEDULING & CALENDARS</span><span>•</span>
+    <span>ENGAGEMENT ANALYTICS</span><span>•</span>
+    <span>OAUTH INTEGRATIONS</span><span>•</span>
+    <span>SOCIAL MEDIA AUTOMATION</span><span>•</span>
+    <span>AI CONTENT GENERATION</span><span>•</span>
+    <span>MULTI-PLATFORM POSTING</span><span>•</span>
+    <span>SCHEDULING & CALENDARS</span><span>•</span>
+    <span>ENGAGEMENT ANALYTICS</span><span>•</span>
+    <span>OAUTH INTEGRATIONS</span><span>•</span>
+    <!-- duplicate for seamless loop -->
+    <span>SOCIAL MEDIA AUTOMATION</span><span>•</span>
+    <span>AI CONTENT GENERATION</span><span>•</span>
+    <span>MULTI-PLATFORM POSTING</span><span>•</span>
+    <span>SCHEDULING & CALENDARS</span><span>•</span>
+    <span>ENGAGEMENT ANALYTICS</span><span>•</span>
+    <span>OAUTH INTEGRATIONS</span><span>•</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <span class="section-label">Capabilities</span>
+  <h2>Everything you need to scale content</h2>
+  <p class="section-sub">From content generation to publishing to analytics — one platform, all major networks.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🧠</div>
+      <h3>GPT-4o Content Generation</h3>
+      <p>One topic prompt produces platform-specific variants for all 5 networks simultaneously — optimised for each platform's tone, length, and audience.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔄</div>
+      <h3>Smart Scheduling</h3>
+      <p>AI picks the best posting times for each platform. Queue content weeks ahead. Bulk upload via CSV or API.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <h3>Real OAuth Connections</h3>
+      <p>Connect Facebook, X, Instagram, Threads, and LinkedIn via official OAuth. No passwords stored. Token refresh automatic.</p>
+      <span class="feature-tag">OAuth 2.0</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Analytics Dashboard</h3>
+      <p>Track impressions, engagement, click-through rates, and ROI per post, platform, and campaign. Data pulled daily from each API.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <h3>n8n Workflow Automation</h3>
+      <p>Trigger workflows from any app. Auto-repost viral content. Route comments to CRM. Full webhook + API integration.</p>
+      <span class="feature-tag">n8n ready</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏢</div>
+      <h3>Multi-tenant SaaS</h3>
+      <p>White-label for agencies. Create client workspaces, manage billing, restrict access. Full tenant isolation and role-based permissions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Content Moderation</h3>
+      <p>AI checks every post for policy violations before publishing. Blocklist terms, sentiment guardrails, character limits enforced automatically.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📱</div>
+      <h3>Developer API</h3>
+      <p>REST + webhooks. Integrate PostForge into your existing tools. SDKs for Python, Node.js, and Go. Full OpenAPI spec.</p>
+      <span class="feature-tag">REST API</span>
+    </div>
+  </div>
+</section>
+
+<!-- WORKFLOW -->
+<div class="workflow-section">
+  <section class="section" style="padding: 4rem 2rem;">
+    <span class="section-label">How it works</span>
+    <h2>From idea to published — in minutes</h2>
+    <p class="section-sub" style="margin-bottom:2rem;">A streamlined flow that turns a single content brief into fully optimised posts across every platform.</p>
+    <div class="workflow-steps">
+      <div class="workflow-step">
+        <div class="step-num">1</div>
+        <h4>Describe your topic</h4>
+        <p>Type a content brief — a product launch, an insight, a promotion. GPT-4o does the rest.</p>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">2</div>
+        <h4>AI generates variants</h4>
+        <p>Platform-native versions for X, Facebook, Instagram, Threads, and LinkedIn. Each optimised for its audience.</p>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">3</div>
+        <h4>Review & approve</h4>
+        <p>Preview all variants. Edit inline. Approve individual posts or bulk-approve for scheduling.</p>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">4</div>
+        <h4>Schedule or publish</h4>
+        <p>Post now or queue for optimal times. AI suggests best windows based on your audience's history.</p>
+      </div>
+      <div class="workflow-step">
+        <div class="step-num">5</div>
+        <h4>Track performance</h4>
+        <p>Real-time analytics per platform. Engagement rates, impressions, clicks — all in one dashboard.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- PLATFORMS -->
+<section class="section" id="platforms">
+  <span class="section-label">Integrations</span>
+  <h2>All major platforms, one dashboard</h2>
+  <p class="section-sub">Official OAuth 2.0 integrations with each platform's current API.</p>
+
+  <div class="platforms-grid">
+    <div class="platform-card">
+      <div class="platform-icon">🐦</div>
+      <h3>X (Twitter)</h3>
+      <p>Threads, tweets, quote tweets, polls, images. Character-aware generation. Thread creation.</p>
+      <div class="platform-status"><div class="status-dot"></div> API v2 active</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">📘</div>
+      <h3>Facebook</h3>
+      <p>Page posts, image posts, links, scheduled publishing, stories via API.</p>
+      <div class="platform-status"><div class="status-dot"></div> Graph API v19.0</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">📷</div>
+      <h3>Instagram</h3>
+      <p>Image posts, carousels, Reels metadata, caption generation. Professional accounts only.</p>
+      <div class="platform-status"><div class="status-dot"></div> Graph API active</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">🧵</div>
+      <h3>Threads</h3>
+      <p>Text and image threads, cross-posted from Instagram. Real-time publishing and scheduling.</p>
+      <div class="platform-status"><div class="status-dot"></div> Meta Graph API</div>
+    </div>
+    <div class="platform-card">
+      <div class="platform-icon">💼</div>
+      <h3>LinkedIn</h3>
+      <p>Org page posts, articles, documents, images. URN-based posting with full lifecycle management.</p>
+      <div class="platform-status"><div class="status-dot"></div> v2 API active</div>
+    </div>
+  </div>
+</section>
+
+<!-- API PREVIEW -->
+<section class="section" id="api">
+  <span class="section-label">Developer API</span>
+  <h2>Built for developers</h2>
+  <p class="section-sub">First-class REST API with OpenAPI spec. Automate everything from your own tooling.</p>
+
+  <div class="api-demo">
+    <div class="api-bar">
+      <div class="api-dot dot-red"></div>
+      <div class="api-dot dot-yellow"></div>
+      <div class="api-dot dot-green"></div>
+      <span class="mono" style="font-size:0.8rem;color:var(--text-3);margin-left:0.5rem;">POST /api/v1/posts/generate</span>
+    </div>
+    <div class="api-code">
+<span class="cm"># Generate AI content for all platforms</span>
+<span class="kw">POST</span> <span class="str">https://api.postforge.ai/v1/posts/generate</span>
+<span class="key">Authorization</span>: <span class="val">Bearer YOUR_API_KEY</span>
+
+<span class="cm"># Request</span>
+{
+  <span class="key">"prompt"</span>: <span class="str">"Launching our new AI analytics dashboard — highlight the time saved and ROI"</span>,
+  <span class="key">"platforms"</span>: [<span class="val">"x_twitter"</span>, <span class="val">"linkedin"</span>, <span class="val">"instagram"</span>],
+  <span class="key">"tone"</span>: <span class="val">"bold"</span>,
+  <span class="key">"num_variations"</span>: <span class="val">2</span>
+}
+
+<span class="cm"># Response</span>
+{
+  <span class="key">"variations"</span>: [
+    {
+      <span class="key">"platform"</span>: <span class="val">"x_twitter"</span>,
+      <span class="key">"content"</span>: <span class="str">"We just cut reporting time from 4 hours → 20 minutes.\n\nOur new AI dashboard does the heavy lifting. Here's the ROI:\n\n📊 -90% manual work\n💰 3.2x faster decisions\n🚀 Built for data teams\n\nSee the full breakdown ↓"</span>,
+      <span class="key">"hashtags"</span>: [<span class="val">"#AI"</span>, <span class="val">"#Analytics"</span>, <span class="val">"#DataDriven"</span>],
+      <span class="key">"hook_used"</span>: <span class="str">"We just cut reporting time from 4 hours → 20 minutes."</span>,
+      <span class="key">"word_count"</span>: <span class="val">38</span>
+    },
+    {
+      <span class="key">"platform"</span>: <span class="val">"linkedin"</span>,
+      <span class="key">"content"</span>: <span class="str">"Most data teams spend 40% of their week on manual reporting.\n\nWe built an AI analytics dashboard that changes that number entirely.\n\nAfter 6 months with 200+ teams, here's what we found:\n\n• Average time saved: 18 hours/month per analyst\n• Decision velocity up 3.2x\n• Report accuracy improved by 94%\n\nThe data is in. What are you doing with the time you've reclaimed?\n\n#AI #Analytics #FutureOfWork"</span>,
+      <span class="key">"hashtags"</span>: [<span class="val">"#AI"</span>, <span class="val">"#Analytics"</span>, <span class="val">"#FutureOfWork"</span>, <span class="val">"#DataScience"</span>],
+      <span class="key">"hook_used"</span>: <span class="str">"Most data teams spend 40% of their week on manual reporting."</span>,
+      <span class="key">"word_count"</span>: <span class="val">72</span>
+    }
+  ],
+  <span class="key">"generated_at"</span>: <span class="val">"2025-04-19T17:00:00Z"</span>,
+  <span class="key">"tokens_used"</span>: <span class="val">1847</span>
+}
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <span class="section-label">Pricing</span>
+  <h2>Simple, transparent pricing</h2>
+  <p class="section-sub">Start free. Scale as you grow. No hidden fees.</p>
+
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0<span>/mo</span></div>
+      <ul class="plan-features">
+        <li>30 posts / month</li>
+        <li>1 team member</li>
+        <li>2 platforms</li>
+        <li>GPT-4o content gen</li>
+        <li>Basic scheduling</li>
+      </ul>
+      <a href="#" class="btn btn-ghost">Get started</a>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="plan-name" style="color:var(--accent);">Pro</div>
+      <div class="plan-price">$99<span>/mo</span></div>
+      <ul class="plan-features">
+        <li>750 posts / month</li>
+        <li>10 team members</li>
+        <li>All 5 platforms</li>
+        <li>GPT-4o + Claude 3.5</li>
+        <li>Analytics dashboard</li>
+        <li>n8n integrations</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="#" class="btn btn-primary">Start 14-day trial</a>
+    </div>
+
+    <div class="pricing-card">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price">$299<span>/mo</span></div>
+      <ul class="plan-features">
+        <li>Unlimited posts</li>
+        <li>Unlimited members</li>
+        <li>All 5 platforms</li>
+        <li>White-label option</li>
+        <li>Client workspaces</li>
+        <li>Custom AI fine-tuning</li>
+        <li>Dedicated account manager</li>
+      </ul>
+      <a href="#" class="btn btn-ghost">Contact sales</a>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<div class="demo-window" id="demo">
+  <div class="demo-placeholder">
+    🚀 Live SaaS dashboard coming soon — deployed at app.postforge.ai<br />
+    <br />
+    Try the API: <span class="mono">api.postforge.ai/docs</span>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to scale your content?</h2>
+  <p>Join agencies and startups that publish smarter with PostForge AI.</p>
+  <a href="#" class="btn btn-primary" style="font-size:1.1rem;padding:0.85rem 2rem;">
+    Start your free trial →
+  </a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>© 2025 Mamu — Built with FastAPI, OpenAI GPT-4o, n8n</div>
+  <div style="display:flex;gap:1.5rem;">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="https://github.com/mamuaminu/postforge" target="_blank">GitHub</a>
+  </div>
+</footer>
+
+</body>
+</html>
