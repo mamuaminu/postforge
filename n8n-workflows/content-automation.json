@@ -17,9 +17,7 @@
     },
     {
       "parameters": {
-        "functionCode": "const content = $json;\nconst platforms = content.platforms || [];\n\nconst routing = {\n  facebook:   { queue: 'postforge:queue:facebook',  channel: '📘 Facebook' },
-  x_twitter:  { queue: 'postforge:queue:x_twitter',  channel: '🐦 X / Twitter' },
-n  instagram:  { queue: 'postforge:queue:instagram', channel: '📷 Instagram' },\n  threads:    { queue: 'postforge:queue:threads',   channel: '🧵 Threads' },\n  linkedin:   { queue: 'postforge:queue:linkedin',  channel: '💼 LinkedIn' },\n};\n\nconst results = platforms.map(p => ({\n  platform: p,\n  queue: routing[p]?.queue || `postforge:queue:${p}`,\n  channel: routing[p]?.channel || p,\n  content: content.variations?.find(v => v.platform === p),\n}));\n\nreturn results;"
+        "functionCode": "const content = $json;\nconst platforms = content.platforms || [];\nconst routing = {\n  facebook:   { queue: 'postforge:queue:facebook',  channel: '📘 Facebook' },\n  x_twitter: { queue: 'postforge:queue:x_twitter',  channel: '🐦 X / Twitter' },\n  instagram: { queue: 'postforge:queue:instagram', channel: '📷 Instagram' },\n  threads:   { queue: 'postforge:queue:threads',   channel: '🧵 Threads' },\n  linkedin:  { queue: 'postforge:queue:linkedin',   channel: '💼 LinkedIn' },\n};\nconst results = platforms.map(p => ({\n  platform: p,\n  queue: routing[p]?.queue || `postforge:queue:${p}`,\n  channel: routing[p]?.channel || p,\n  content: content.variations?.find(v => v.platform === p),\n}));\nreturn results;"
       },
       "id": "content-router",
       "name": "Route by Platform",

@@ -8,6 +8,7 @@ from models.database import Post, PostStatus, async_session
 from routers.auth import get_current_user
 from services.ai_generator import ContentGenerator
 from services.social_publisher import get_platform_adapter
+from services.tasks import publish_post
 from sqlalchemy import select, func
 import logging
 
@@ -50,13 +51,22 @@ async def generate_content(
     Returns variations for each platform, ready for review or direct scheduling.
     """
     gen = ContentGenerator()
-    result = await gen.generate(
-        prompt=req.prompt,
-        platforms=req.platforms,
-        tone=req.tone,
-        num_variations=req.num_variations,
-    )
-    return result
+    try:
+        result = await gen.generate(
+            prompt=req.prompt,
+            platforms=req.platforms,
+            tone=req.tone,
+            num_variations=req.num_variations,
+        )
+        return result
+    except Exception as e:
+        logger.error("Content generation failed: %s", str(e))
+        # Return a structured error instead of 500
+        raise HTTPException(
+            502,
+            f"AI generation failed: {str(e)[:200]}. "
+            "Check your OpenAI API key and quota."
+        )
 
 
 @router.post("/thread/generate")
@@ -117,7 +127,6 @@ async def create_post(
             image_urls=req.image_urls,
             scheduled_at=req.scheduled_at,
             status=status,
-            ai_generated=req.ai_generated,
             ai_prompt=req.ai_prompt,
             ai_variants=req.ai_variants,
         )
@@ -126,9 +135,35 @@ async def create_post(
         await sess.refresh(post)
 
     if not req.scheduled_at:
-        # Publish immediately in background
+        # Dispatch to Celery worker — publish in background
+        try:
+            # Look up the tenant's connected platform credentials
+            async with async_session() as sess:
+                from models.database import ConnectedPlatform, PlatformEnum
+                result = await sess.execute(
+                    select(ConnectedPlatform).where(
+                        ConnectedPlatform.tenant_id == user["tenant_id"],
+                        ConnectedPlatform.platform == platform,
+                        ConnectedPlatform.is_active == True,
+                    )
+                )
+                cp = result.scalar_one_or_none()
+
+            if cp:
+                credentials = {
+                    "access_token": cp.access_token_encrypted or "",
+                    "account_id": cp.account_id or "",
+                }
+                publish_post.delay(post.id, platform, credentials, req.content, req.image_urls)
+            else:
+                # No platform connected yet — queue anyway with empty creds
+                # Worker will log and mark FAILED
+                publish_post.delay(post.id, platform, {}, req.content, req.image_urls)
+
+        except Exception as e:
+            logger.warning(f"Failed to dispatch publish task for post {post.id}: {e}")
+
         return {"post_id": post.id, "status": "queued_for_publish", "platform": platform}
-        # BackgroundTasks would call _publish_post(post.id) here
 
     return {
         "post_id": post.id,
@@ -167,7 +202,6 @@ async def list_posts(
                     "scheduled_at": p.scheduled_at.isoformat() if p.scheduled_at else None,
                     "published_at": p.published_at.isoformat() if p.published_at else None,
                     "platform_url": p.platform_url,
-                    "ai_generated": p.ai_generated,
                     "created_at": p.created_at.isoformat(),
                 }
                 for p in posts
@@ -203,7 +237,6 @@ async def get_post(post_id: int, user=Depends(get_current_user)):
             "platform_post_id": post.platform_post_id,
             "platform_url": post.platform_url,
             "error_message": post.error_message,
-            "ai_generated": post.ai_generated,
             "ai_prompt": post.ai_prompt,
             "ai_variants": post.ai_variants,
         }

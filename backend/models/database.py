@@ -1,5 +1,6 @@
 # © 2025 Mamu — All Rights Reserved
 """Database models for PostForge AI."""
+import os
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, Float, Boolean, DateTime, ForeignKey, JSON, Enum
 from sqlalchemy.orm import declarative_base, relationship
