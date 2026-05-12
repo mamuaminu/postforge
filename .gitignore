@@ -1,0 +1,42 @@
+# python
+__pycache__/
+*.py[cod]
+*.pyc
+
+# dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# build output
+.next/
+out/
+dist/
+build/
+
+# testing
+coverage/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# db
+postforge.db
+*.db
